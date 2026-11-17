@@ -13,7 +13,7 @@
       "binding": "DB",
       "database_name": "imgbed",
       // `npx wrangler d1 create imgbed` 之后把输出的 database_id 填到这里
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "a1d69942-306a-4414-8f2f-cc805c1b4fe0",
       "migrations_dir": "migrations"
     }
   ],
@@ -21,10 +21,10 @@
   "vars": {
     // 图片对外链接的前缀，绑定自定义域名后填，例如 "https://img.example.com"
     // 留空则使用请求的域名
-    "PUBLIC_BASE_URL": "",
+    "PUBLIC_BASE_URL": "https://img.duetread.com",
     "MAX_UPLOAD_MB": "20"
-  }
+  },
 
-  // 绑定自定义域名（域名需托管在 Cloudflare）：
-  // ,"routes": [{ "pattern": "img.example.com", "custom_domain": true }]
+  // 自定义域名（域名需托管在 Cloudflare）
+  "routes": [{ "pattern": "img.duetread.com", "custom_domain": true }]
 }
