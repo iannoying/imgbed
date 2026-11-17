@@ -8,6 +8,32 @@
 - 相同图片自动去重（按 SHA-256），重复上传返回原链接
 - 一个简单的网页管理界面（浏览 / 搜索 / 拖拽上传 / 改说明 / 删除）
 
+## 当前部署
+
+| 项 | 值 |
+|---|---|
+| 地址 | https://img.duetread.com （管理页面、API、MCP 都在这个域名下） |
+| Worker | `imgbed`，自定义域名 `img.duetread.com` |
+| R2 存储桶 | `imgbed` |
+| D1 数据库 | `imgbed`（`database_id` 已写在 `wrangler.jsonc`） |
+| 访问 Token | Worker Secret `API_TOKEN`，本人另行保存，不在仓库里 |
+
+日常维护：
+
+```bash
+npm run deploy                        # 改了代码后重新部署
+npm run db:migrate:remote             # 新增了 migrations/ 里的 SQL 后执行
+npx wrangler secret put API_TOKEN     # 换访问 Token（旧的立即失效，记得同步更新各 agent 的配置）
+npx wrangler tail                     # 实时查看线上日志
+
+# 对线上跑端到端测试（会上传几张测试图，结束后自动删除）
+IMGBED_URL=https://img.duetread.com IMGBED_TOKEN=<token> npm test
+```
+
+> 如果你是 fork 这个仓库自己部署，需要把 `wrangler.jsonc` 里的 `database_id`、`PUBLIC_BASE_URL`、`routes` 换成你自己的，按下面"部署"一节从头做。
+
+## 架构
+
 ```
 agent / CLI / 网页 ──(Bearer Token)──▶ Worker ──▶ R2  (图片文件)
                                         │     └─▶ D1  (说明、标签、尺寸、来源…)
@@ -41,6 +67,11 @@ npm install
 npx wrangler login
 ```
 
+不方便用浏览器登录（比如在 CI 或云端 agent 里部署）时，改用 API Token：在 Cloudflare 后台 → My Profile → API Tokens 用 **"Edit Cloudflare Workers"** 模板创建，并确认包含以下权限，然后设置环境变量 `CLOUDFLARE_API_TOKEN` 和 `CLOUDFLARE_ACCOUNT_ID`：
+
+- 账号级：Workers Scripts: Edit、Workers R2 Storage: Edit、D1: Edit、Account Settings: Read
+- 域名级（你的域名）：Workers Routes: Edit、Zone: Read；要用 API 管理 DNS 记录的话再加 DNS: Edit
+
 1. 在 Cloudflare 后台 → R2 → 开通 R2（绑定支付方式），然后创建存储桶和数据库：
 
    ```bash
@@ -48,7 +79,7 @@ npx wrangler login
    npx wrangler d1 create imgbed
    ```
 
-2. 把 `d1 create` 输出的 `database_id` 填进 `wrangler.jsonc`。
+2. 把 `d1 create` 输出的 `database_id` 填进 `wrangler.jsonc`（替换掉现有的值）。
 
 3. 初始化数据库表：
 
@@ -63,7 +94,7 @@ npx wrangler login
    npx wrangler secret put API_TOKEN
    ```
 
-5. （推荐）绑定自定义域名：在 `wrangler.jsonc` 里打开 `routes`，并把 `PUBLIC_BASE_URL` 设成 `https://img.example.com`。
+5. 绑定自定义域名：把 `wrangler.jsonc` 里 `routes` 的 `pattern` 和 `PUBLIC_BASE_URL` 改成你的域名（如 `img.example.com` / `https://img.example.com`）。该子域名不能已有 DNS 记录，部署时 Cloudflare 会自动创建记录和证书。
 
 6. 部署：
 
