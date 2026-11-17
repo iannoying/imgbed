@@ -10,7 +10,9 @@ description and tags (stored in D1). Uploading the same bytes twice returns the 
 
 ## Config
 
-`IMGBED_URL` and `IMGBED_TOKEN` must be set (or `~/.config/imgbed/config.json` with `{"url","token"}`).
+The instance lives at **https://img.duetread.com** (management page at `/`, API at `/api/images`, MCP at `/mcp`).
+
+`IMGBED_URL` (= `https://img.duetread.com`) and `IMGBED_TOKEN` must be set (or `~/.config/imgbed/config.json` with `{"url","token"}`).
 Set `IMGBED_SOURCE` to your agent name (e.g. `claude-code`) so uploads are attributed.
 
 ## Upload

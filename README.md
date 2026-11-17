@@ -2,7 +2,7 @@
 
 把图片存在 **Cloudflare R2**，图片说明/标签存在 **D1**，用一个 **Worker** 对外提供：
 
-- 永久公开链接：`https://img.你的域名/2026/11/AbCdEf123456.png`，公众号、Notion、Obsidian、博客可同时引用
+- 永久公开链接：`https://img.duetread.com/2026/11/AbCdEf123456.png`，公众号、Notion、Obsidian、博客可同时引用
 - 每张图都有**说明 + 标签**，可以按中文关键词搜回来（"上次那张架构图"）
 - 给 agent 的三种接入方式：**CLI**、**HTTP API（curl）**、**MCP**（Claude Code / Claude Desktop 等直接调用）
 - 相同图片自动去重（按 SHA-256），重复上传返回原链接
@@ -27,7 +27,7 @@ npx wrangler secret put API_TOKEN     # 换访问 Token（旧的立即失效，�
 npx wrangler tail                     # 实时查看线上日志
 
 # 对线上跑端到端测试（会上传几张测试图，结束后自动删除）
-IMGBED_URL=https://img.duetread.com IMGBED_TOKEN=<token> npm test
+IMGBED_URL=https://img.duetread.com IMGBED_TOKEN=<API_TOKEN> npm test
 ```
 
 > 如果你是 fork 这个仓库自己部署，需要把 `wrangler.jsonc` 里的 `database_id`、`PUBLIC_BASE_URL`、`routes` 换成你自己的，按下面"部署"一节从头做。
@@ -102,7 +102,7 @@ npx wrangler login
    npm run deploy
    ```
 
-打开 `https://img.example.com/`，输入 Token，就能看到管理页面。
+打开 `https://<你的域名>/`（本项目是 https://img.duetread.com/ ），输入 Token，就能看到管理页面。
 
 ### 本地开发 / 测试
 
@@ -115,16 +115,18 @@ npm test                                      # 另开一个终端，端到端�
 
 ## 让 agent 使用
 
+下面的命令都已填好本项目的地址 `https://img.duetread.com`，`<API_TOKEN>` 换成你保存的访问 Token（就是 Worker Secret `API_TOKEN` 的值）。
+
 ### 方式一：CLI（最推荐，能直接传本地文件）
 
 ```bash
 npm install -g .        # 在仓库目录执行，得到 imgbed 命令；或直接 node scripts/imgbed.mjs
-export IMGBED_URL=https://img.example.com
-export IMGBED_TOKEN=你的token
+export IMGBED_URL=https://img.duetread.com
+export IMGBED_TOKEN=<API_TOKEN>
 export IMGBED_SOURCE=claude-code   # 可选，记录是谁传的
 ```
 
-也可以写到 `~/.config/imgbed/config.json`：`{"url": "https://img.example.com", "token": "..."}`
+也可以写到 `~/.config/imgbed/config.json`：`{"url": "https://img.duetread.com", "token": "<API_TOKEN>"}`（推荐，不用每次 export）
 
 ```bash
 imgbed upload ./cover.png -d "文章封面：深蓝背景上的白色标题‘自建图床’" -t 公众号,封面 --md
@@ -144,8 +146,8 @@ imgbed delete <id>
 适合不能执行命令的客户端（如 Claude Desktop、网页版）。
 
 ```bash
-claude mcp add --transport http imgbed https://img.example.com/mcp \
-  --header "Authorization: Bearer 你的token"
+claude mcp add --transport http imgbed https://img.duetread.com/mcp \
+  --header "Authorization: Bearer <API_TOKEN>"
 ```
 
 提供的工具：`upload_image`（传 `url` 或 `data_base64`）、`search_images`、`get_image`、`update_image`、`delete_image`。
@@ -168,7 +170,7 @@ claude mcp add --transport http imgbed https://img.example.com/mcp \
 ```bash
 curl -H "Authorization: Bearer $IMGBED_TOKEN" \
   -F file=@cover.png -F description="文章封面" -F tags="公众号,封面" \
-  https://img.example.com/api/images
+  https://img.duetread.com/api/images
 ```
 
 返回示例：
@@ -176,8 +178,8 @@ curl -H "Authorization: Bearer $IMGBED_TOKEN" \
 ```json
 {
   "id": "GiXUMxPb8xpk",
-  "url": "https://img.example.com/2026/11/GiXUMxPb8xpk.png",
-  "markdown": "![文章封面](https://img.example.com/2026/11/GiXUMxPb8xpk.png)",
+  "url": "https://img.duetread.com/2026/11/GiXUMxPb8xpk.png",
+  "markdown": "![文章封面](https://img.duetread.com/2026/11/GiXUMxPb8xpk.png)",
   "content_type": "image/png", "size": 6903, "width": 400, "height": 300,
   "description": "文章封面", "tags": ["公众号", "封面"],
   "source": "claude-code", "duplicate": false,
